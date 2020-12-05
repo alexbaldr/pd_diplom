@@ -25,7 +25,7 @@ SECRET_KEY = '^59=gn7!e$lyhlz9au(p-*y26e=l4c&v+=hkia_6vi476w48dt'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
+    'rest_framework_simplejwt',
     'shop',
     'registration',
 ]
@@ -77,10 +80,18 @@ WSGI_APPLICATION = 'ultrashop.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
+    # 'default': {
+    #     'ENGINE': 'django.db.backends.sqlite3',
+    #     'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+    # }
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-    }
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': 'diplom_API',
+            'USER': 'postgres',
+            'PASSWORD': 'Hagush1190',
+            'HOST': '127.0.0.1',
+            'PORT': '5432'
+                }
 }
 
 
@@ -108,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'ru'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -117,7 +128,33 @@ USE_L10N = True
 USE_TZ = True
 
 
-CART_SESSION_ID = 'cart'
+# CART_SESSION_ID = 'cart'
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 40,
+    'DEFAULT_RENDERER_CLASSES': [
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework.renderers.BrowsableAPIRenderer'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+#     'DEFAULT_PARSER_CLASSES': [
+#         'rest_framework.parsers.JSONParser',
+#     ],
+#     'DEFAULT_PERMISSION_CLASSES': [
+#         'rest_framework.permissions.IsAdminUser',
+#         'rest_framework.permissions.AllowAny',
+#     ]
+}
+DJOSER = {
+    'LOGIN_FIELD': 'email'
+}
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -160,9 +197,9 @@ CKEDITOR_CONFIGS = {
 }
 CKEDITOR_BROWSE_SHOW_DIRS = True
 
-AUTHENTICATION_BACKENDS = [
-    'registration.loginauth.EmailAuthBackend',
-]
+# AUTHENTICATION_BACKENDS = [
+#     'registration.loginauth.EmailAuthBackend',
+# ]
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
@@ -174,6 +211,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 DEFAULT_FROM_EMAIL = ['manager@mysite.com']
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-AUTH_USER_MODEL = "shop.User"
+AUTH_USER_MODEL = "registration.User"

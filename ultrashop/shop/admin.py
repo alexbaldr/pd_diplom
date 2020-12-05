@@ -1,37 +1,42 @@
 from shop.models import *
 from django.contrib import admin
 
-# Register your models here.
+
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
-    class Meta:
-        list_display = ['name', 'url', ]
+    list_display = ['name', 'slug', ]
+    list_filter = ['state', ]
+    prepopulated_fields = {'slug': ('name',)}
+
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    class Meta:
-        list_display = ['name', 'shops', ]
+    list_display = ['name', ]
+    prepopulated_fields = {'slug': ('name',)}
+
 
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
-    class Meta:
-        list_display = ['name', 'category', ]
-    
+    prepopulated_fields = {'slug': ('name',)}
+    list_display = ['name', 'category', 'slug', ]
+    list_filter = ['state', ]
+
+
 @admin.register(Productinfo)
 class ProductinfoAdmin(admin.ModelAdmin):
-    class Meta:
-        list_display = ['name', 'shop', 'product', 'quantity', 'price', ]
+    list_display = ['name', 'shop', 'product', 'quantity', 'price', 'price_rrc', ]
+
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    class Meta:
-        list_display = ['user', 'dt', 'status']    
+    list_display = ['user', 'dt', 'state', ]
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    class Meta:
-        list_display = ['order', 'product', 'shop', 'quantity']    
+    list_display = ['order', 'product', 'shop', 'quantity', ]
 
 
- 
+@admin.register(Contact)
+class ContactAdmin(admin.ModelAdmin):
+    list_display = ['user', 'city', 'address', 'phone', ]
