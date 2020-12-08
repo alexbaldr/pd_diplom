@@ -1,13 +1,16 @@
 from shop.signals import new_order_reciver
+from rest_framework import viewsets
 from django.db.models.query_utils import Q
-import django.dispatch
+from django_filters.rest_framework import DjangoFilterBackend
 from django.http.response import JsonResponse
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.views import APIView
+from rest_framework.generics import ListAPIView
 from rest_framework.response import Response
 from shop.models import *
 from shop.serializers import *
 from registration.models import User
+
 
 
 class CategoryView(APIView):
@@ -48,16 +51,21 @@ class ShopView(APIView):
         serializer = ShopSerializers(quaryset, many=True)
         return Response(serializer.data)
 
+class ShopDetailView(viewsets.ModelViewSet):
+    queryset = Shop.objects.all()
+    serializer_class = ShopSerializers
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ("slug",)    
 
-class ShopDetailView(APIView):
-    # Просмотр информации о нужном магазине
-    def get(self, request, slug):
-        try:
-            shop = Shop.objects.get(slug=slug,)
-            serializer = ShopSerializers(shop)
-            return Response(serializer.data)
-        except Exception:
-            return JsonResponse({'Status': False, 'Error': 'Required page do not exist'}, status=404)
+# class ShopDetailView(APIView):
+#     # Просмотр информации о нужном магазине
+#     def get(self, request, slug):
+#         try:
+#             shop = Shop.objects.get(slug=slug,)
+#             serializer = ShopSerializers(shop)
+#             return Response(serializer.data)
+#         except Exception:
+#             return JsonResponse({'Status': False, 'Error': 'Required page do not exist'}, status=404)
 
 
 class ProductView(APIView):
@@ -213,3 +221,9 @@ class ContactView(APIView):
         else:
             return JsonResponse({'Status': False, 'Error': 'Not all parameters were given'},
                                 status=400)
+
+class ParametrView(viewsets.ModelViewSet):
+    queryset = Productinfo.objects.all()
+    serializer_class = ProductInfoSerializers
+    filter_backends = [DjangoFilterBackend]
+    filter_fields = ("productparameter",)

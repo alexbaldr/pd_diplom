@@ -130,7 +130,7 @@ class ProductParameter(models.Model):
         verbose_name_plural = "ProductParameters"
 
     def __str__(self):
-        return self.parameter
+        return "{}".format(self.parameter)
 
 
 class Order(models.Model):
@@ -165,7 +165,6 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return "{}".format(self.order)
-
 
 
 class Contact(models.Model):

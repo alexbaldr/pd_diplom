@@ -5,6 +5,7 @@ from django.contrib import admin
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug', ]
+    # list_display = [field.name for field in Shop._meta.get_fields()]
     list_filter = ['state', ]
     prepopulated_fields = {'slug': ('name',)}
 
@@ -40,3 +41,13 @@ class OrderItemAdmin(admin.ModelAdmin):
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
     list_display = ['user', 'city', 'address', 'phone', ]
+
+
+@admin.register(Parameter)
+class ParameterAdmin(admin.ModelAdmin):
+    list_display = ['name', ]
+
+
+@admin.register(ProductParameter)
+class ProductParameterAdmin(admin.ModelAdmin):
+    list_display = ['product_info', "value", ]
