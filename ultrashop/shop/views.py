@@ -1,4 +1,5 @@
 from shop.signals import new_order_reciver
+from rest_framework import mixins
 from rest_framework import viewsets
 from django.db.models.query_utils import Q
 from django_filters.rest_framework import DjangoFilterBackend
@@ -55,7 +56,7 @@ class ShopDetailView(viewsets.ModelViewSet):
     queryset = Shop.objects.all()
     serializer_class = ShopSerializers
     filter_backends = [DjangoFilterBackend]
-    filter_fields = ("slug",)    
+    filter_fields = ("slug",)
 
 # class ShopDetailView(APIView):
 #     # Просмотр информации о нужном магазине
@@ -163,6 +164,13 @@ class OrderView(APIView):
             return Response(serializer.errors)
 
 
+# class ContactView(viewsets.ModelViewSet):
+#     # def list(self, request):
+#     permission_classes = [IsAuthenticated]
+#     queryset = Contact.objects.all()
+#     serializer_class = ContactSerializers
+
+
 class ContactView(APIView):
     def get(self, request, *args, **kwargs):
         if request.user.is_authenticated:
@@ -221,6 +229,7 @@ class ContactView(APIView):
         else:
             return JsonResponse({'Status': False, 'Error': 'Not all parameters were given'},
                                 status=400)
+
 
 class ParametrView(viewsets.ModelViewSet):
     queryset = Productinfo.objects.all()

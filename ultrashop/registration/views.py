@@ -9,6 +9,7 @@ from rest_framework.authtoken.models import Token
 from django.http import JsonResponse
 from rest_framework import status
 from registration.signals import new_user_registered
+from registration.tasks import send_token_task
 
 
 class RegisterView(APIView):
@@ -17,7 +18,7 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             obj_user = User.objects.get(id=user.id)
-            new_user_registered.send(sender=self.__class__, user_id=obj_user)
+            send_token_task.delay(user_id=obj_user) # выскакивает ошибка рэдиса
             return Response(serializer.data)
         else:
             return Response(serializer.errors)

@@ -175,4 +175,4 @@ class Contact(models.Model):
     phone = models.CharField(max_length=20, verbose_name='Телефон')
 
     def __str__(self):
-        return self.user
+        return "{}".format(self.user)
