@@ -40,7 +40,7 @@ class OrderItemAdmin(admin.ModelAdmin):
 
 @admin.register(Contact)
 class ContactAdmin(admin.ModelAdmin):
-    list_display = ['user', 'city', 'address', 'phone', ]
+    list_display = ['contact_id', 'user', 'city', 'address', 'phone', ]
 
 
 @admin.register(Parameter)

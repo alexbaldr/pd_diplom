@@ -13,6 +13,7 @@ from registration.tasks import send_token_task
 
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request, *args, **kwargs):
         serializer = RegUserSerializers(data=request.data)
         if serializer.is_valid():

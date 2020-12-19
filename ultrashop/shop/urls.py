@@ -11,6 +11,11 @@ urlpatterns = [
     path ('products/product/', ProductDetailView.as_view()),
     path ('products/product/<int:pk>/', ChangeProductView.as_view()),
     path("products/product/parametr/", ParametrView.as_view({'get': 'list', })),
-    path ('user/contacts/', ContactView.as_view()),
+    path ('user/contacts/', ContactView.as_view({'get': 'list',
+                                                'post':'create' })),
+    path ('user/contacts/<pk>', ContactView.as_view({'get': 'retrieve',
+                                                     'delete': 'destroy',
+                                                     'put':'update',
+                                                      }),name='contact_detail'),
     path('shops/category/', CategoryView.as_view()),
 ]

@@ -1,3 +1,4 @@
+from django.core.validators import MaxLengthValidator
 from rest_framework import serializers
 from rest_framework.relations import RelatedField
 from shop.models import *
@@ -60,6 +61,18 @@ class OrderItemSerializers(serializers.ModelSerializer):
 
 class ContactSerializers(serializers.ModelSerializer):
     user_id = serializers.IntegerField()
+    contact_id = serializers.IntegerField(max_value=5, min_value=1) # айди для определения максимального допустимого числа контактов для записи. заполняется во фронт-энде
+
     class Meta:
         model = Contact
-        fields = ('id', 'city', 'address', 'phone', 'user_id',)
+        fields = ('contact_id', 'city', 'address', 'phone', 'user_id',)
+
+    def create(self, validated_data):
+        return Contact.objects.create(**validated_data)
+
+    def update(self, instance, validated_data):
+        instance.city = validated_data['city']
+        instance.address = validated_data['address']
+        instance.phone = validated_data['phone']
+        instance.save()
+        return instance

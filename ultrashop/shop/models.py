@@ -168,6 +168,7 @@ class OrderItem(models.Model):
 
 
 class Contact(models.Model):
+    contact_id = models.PositiveIntegerField(default=None, blank=True, verbose_name='Порядковый номер')
     city = models.CharField(max_length=30, verbose_name='Город')
     address = models.CharField(max_length=150, verbose_name='Адрес')
     user = models.ForeignKey(User, verbose_name='Пользователь',
