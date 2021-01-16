@@ -32,9 +32,9 @@ class Shop(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super(Shop, self).save(*args, **kwargs)
+    # def save(self, **kwargs):
+    #     self.slug = slugify(self.name)
+    #     super(Shop, self).save(**kwargs)
 
     # def get_absolute_url(self):
     #     return reverse("Shop_detail", kwargs={"pk": self.pk})
@@ -54,9 +54,9 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-    def save(self, *args, **kwargs):
-        self.slug = slugify(self.name)
-        super(Category, self).save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     self.slug = slugify(self.name)
+    #     super(Category, self).save(*args, **kwargs)
 
 
 class Product(models.Model):

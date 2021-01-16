@@ -24,7 +24,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -35,17 +34,19 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_filters',
-    'rest_framework',
-    'rest_framework.authtoken',
     'ckeditor',
     'ckeditor_uploader',
     'djoser',
+    'django_rest_allauth',
+    'rest_framework',
+    'rest_framework.authtoken',
     'corsheaders',
     'rest_framework_simplejwt',
     'shop',
     'registration',
     'celery',
     'djcelery_email',
+    'django_throttling',
 ]
 
 MIDDLEWARE = [
@@ -61,10 +62,23 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'ultrashop.urls'
 
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+SITE_ID = 1
+CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "https://sub.example.com",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000"
+]
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -152,18 +166,20 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.IsAdminUser',
         'rest_framework.permissions.AllowAny',
-    ]
-}
+        'rest_framework.permissions.IsAuthenticated',
+        ],
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle'
+        ),
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '100/day',
+        'user': '1000/day'
+        }
+    }
 DJOSER = {
     'LOGIN_FIELD': 'email'
-}
-
-CORS_ALLOWED_ORIGINS = [
-    "https://example.com",
-    "https://sub.example.com",
-    "http://localhost:8080",
-    "http://127.0.0.1:9000"
-]
+        }
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
@@ -180,35 +196,17 @@ CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
 CKEDITOR_UPLOAD_PATH = "uploads/"
 CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': [
-            ['Undo', 'Redo',
-             '-', 'Bold', 'Italic', 'Underline',
-             '-', 'Link', 'Unlink', 'Anchor',
-             '-', 'Format',
-             '-', 'Maximize',
-             '-', 'Table',
-             '-', 'Image',
-             '-', 'Source',
-             '-', 'NumberedList', 'BulletedList'
-            ],
-            ['JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock',
-             '-', 'Font', 'FontSize', 'TextColor',
-             '-', 'Outdent', 'Indent',
-             '-', 'HorizontalRule',
-             '-', 'Blockquote'
-            ]
-        ],
-        'height': 100,
-        'width': '50%',
-        'toolbarCanCollapse': False,
-        'forcePasteAsPlainText': True
-    }
+        'toolbar': 'full',
+        'height': 300,
+        'width': 300,
+    },
 }
 CKEDITOR_BROWSE_SHOW_DIRS = True
 
 # AUTHENTICATION_BACKENDS = [
 #     'registration.loginauth.EmailAuthBackend',
 # ]
+
 
 TEMPLATE_CONTEXT_PROCESSORS = (
     'django.contrib.auth.context_processors.auth',
@@ -220,7 +218,6 @@ TEMPLATE_CONTEXT_PROCESSORS = (
 )
 
 DEFAULT_FROM_EMAIL = ['manager@mysite.com']
-# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 AUTH_USER_MODEL = "registration.User"
 
@@ -229,6 +226,7 @@ CELERY_RESULT_BACKEND = 'redis://localhost:6379'
 CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TASK_SERIALIZER = 'json'
+CELERY_ALWAYS_EAGER = True
 
 EMAIL_HOST = 'SMTP_HOST'
 
@@ -238,6 +236,30 @@ EMAIL_HOST_USER = 'SMTP_USER'
 
 EMAIL_HOST_PASSWORD = 'SMTP_PASSWORD'
 
-EMAIL_USE_TLS = True # TLS settings
+EMAIL_USE_TLS = True  # TLS settings
 
 EMAIL_BACKEND = 'djcelery_email.backends.CeleryEmailBackend'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'filters': {
+        'require_debug_false': {
+            '()': 'django.utils.log.RequireDebugFalse'
+        }
+    },
+    'handlers': {
+        'mail_admins': {
+            'level': 'ERROR',
+            'filters': ['require_debug_false'],
+            'class': 'django.utils.log.AdminEmailHandler'
+        }
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['mail_admins'],
+            'level': 'ERROR',
+            'propagate': True,
+        },
+    }
+}

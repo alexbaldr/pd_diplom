@@ -1,14 +1,12 @@
-from django.core.validators import MaxLengthValidator
 from rest_framework import serializers
-from rest_framework.relations import RelatedField
-from shop.models import *
-from shop.models import Shop
-from registration.models import User
+from .models import Shop, Category, Product, Productinfo, Order, OrderItem,\
+                    Contact, Parameter, ProductParameter
 
 
 class ShopSerializers(serializers.ModelSerializer):
     shop_manager = serializers.StringRelatedField(read_only=True)
     shop_manager_id = serializers.IntegerField()
+
     class Meta:
         model = Shop
         fields = ('id', 'name', 'url', 'file',
@@ -17,6 +15,7 @@ class ShopSerializers(serializers.ModelSerializer):
 
 class CategorySerializers(serializers.ModelSerializer):
     shop_id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Category
         fields = ('id', 'name', 'shop_id',)
@@ -25,24 +24,33 @@ class CategorySerializers(serializers.ModelSerializer):
 class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
-        fields = "__all__"#('id', 'name', 'category',)
+        fields = "__all__"
 
 
 class ProductInfoSerializers(serializers.ModelSerializer):
     product_id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Productinfo
-        fields = ('id', 'name', 'shop', "product", 'product_id', 'quantity', 'price', 'price_rrc')
+        fields = ('id', 'name', 'shop', "product", 'product_id',
+                  'quantity', 'price', 'price_rrc')
+
+
+class ProductParameterSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = ProductParameter
+        fields = ('id', 'name', 'product_info')
 
 
 class ParameterSerializers(serializers.ModelSerializer):
     class Meta:
         model = Parameter
-        fields = ('id', 'name',)
+        fields = ('parameter', 'value')
 
 
 class OrderSerializers(serializers.ModelSerializer):
     user_id = serializers.IntegerField()
+
     class Meta:
         model = Order
         fields = ('user', 'dt', 'user_id', )
@@ -56,12 +64,15 @@ class OrderItemSerializers(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItem
-        fields = ('order', 'product', 'shop', 'quantity', 'shop_id', 'product_id',)
+        fields = ('order', 'product', 'shop', 'quantity',
+                  'shop_id', 'product_id',)
 
 
 class ContactSerializers(serializers.ModelSerializer):
+    # contact_id - айди для определения максимального допустим
+    # числа контактов для записи. заполняется во фронт-энде
     user_id = serializers.IntegerField()
-    contact_id = serializers.IntegerField(max_value=5, min_value=1) # айди для определения максимального допустимого числа контактов для записи. заполняется во фронт-энде
+    contact_id = serializers.IntegerField(max_value=5, min_value=1)
 
     class Meta:
         model = Contact

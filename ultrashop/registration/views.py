@@ -1,26 +1,32 @@
-from rest_framework.authentication import SessionAuthentication, BasicAuthentication
-from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import authenticate
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from registration.serializers import *
-from registration.models import User
-from rest_framework.authtoken.models import Token
 from django.http import JsonResponse
 from rest_framework import status
+from rest_framework.authentication import (BasicAuthentication,
+                                           SessionAuthentication)
+from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from registration.models import User
+from registration.serializers import *
+# from registration.tasks import send_token_task
 from registration.signals import new_user_registered
-from registration.tasks import send_token_task
+# from rest_framework.renderers import TemplateHTMLRenderer
 
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+    # renderer_classes = [TemplateHTMLRenderer]
+    # template_name = 'admin.html'
+
     def post(self, request, *args, **kwargs):
         serializer = RegUserSerializers(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
             obj_user = User.objects.get(id=user.id)
-            send_token_task.delay(user_id=obj_user) # выскакивает ошибка рэдиса
-            return Response(serializer.data)
+            new_user_registered.send(sender=self.__class__, user_id=obj_user)
+            return Response(serializer.data, status.HTTP_201_CREATED)
         else:
             return Response(serializer.errors)
 
@@ -29,14 +35,19 @@ class EnterView(APIView):
     # Вход
     authentication_classes = [SessionAuthentication, BasicAuthentication]
     permission_classes = [AllowAny]
+    # renderer_classes = [TemplateHTMLRenderer]
+    # template_name = 'admin.html'
 
     def post(self, request, *args, **kwargs):
         serializer = EnterSerializers(data=request.data)
-        if serializer.is_valid(raise_exception=True):
+        # if serializer.is_valid(raise_exception=True):
+        if {'email', 'password'}.issubset(request.data):
             user = authenticate(request, email=request.data['email'],
                                 password=request.data['password'])
-            return Response(serializer.data, status=status.HTTP_200_OK,)
-
+            if user is not None:
+                token = Token.objects.get_or_create(user=user)
+                return JsonResponse({'Status': True, 'Token': token.key})
+            # return Response(serializer.data, status.HTTP_200_OK)
         return JsonResponse({'Status': False, 'Errors': 'Не указаны все необходимые аргументы'})
 
 
@@ -51,7 +62,7 @@ class GetUserView(APIView):
             s = self.serializer(quaryset)
             return Response(s.data)
         else:
-            return JsonResponse({'Status': False, 'Errors': 'Нужна регистрация пользователя'})
+            return JsonResponse({'Status': False, 'Errors': 'Нужна регистрация пользователя'}) 
         # редактирование пользовательских данных
 
     def post(self, request, *args, **kwargs):

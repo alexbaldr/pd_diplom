@@ -1,25 +1,56 @@
-from django.test import TestCase
-from rest_framework.test import APITestCase
+import json
+
 from django.urls import reverse
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APITestCase, force_authenticate
+
+from .models import User
+from .serializers import UserSerializers
+
+
+class RegistrationTestCase(APITestCase):
+    def test_reg(self):
+        data = {
+                "username": "john_doe",
+                "email": "doe@box.com",
+                "first_name": "john",
+                "password": "strong_psw",
+                "last_name": "doe"
+                }
+        response = self.client.post('api/v1/user/reg/', data)
+        print(response.content)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    # def setUp(self):
+    #     self.username = 'john_doe'
+    #     self.password = 'foobar'
+    #     self.user = User.objects.create(username=self.username, password=self.password, email="doe@box.com")
+    #     self.client(user=self.user)
+
+    # def test_1(self):
+    #     response = self.client.post('/django-rest-allauth/token/createuser ', c)
+    #     print(response.content)
+    #     self.assertEqual(response.status_code, 201)
 
 # # Create your tests here.
-class userProfileTestCase(APITestCase):
-    profile_list_url=reverse('all-profiles')
-    def setUp(self):
-        # создайте нового пользователя, отправив запрос к конечной точке djoser
-        self.user=self.client.post('/auth/users/',data={'username':'mario','password':'i-keep-jumping'})
-        # получить веб-токен JSON для вновь созданного пользователя
-        response=self.client.post('/auth/jwt/create/',data={'username':'mario','password':'i-keep-jumping'})
-        self.token=response.data['access']
-        self.api_authentication()
+# class userProfileTestCase(APITestCase):
+#     profile_list_url=reverse('all-profiles')
+#     def setUp(self):
+#         # создайте нового пользователя, отправив запрос к конечной точке djoser
+#         self.user=self.client.post('api/v1/user/reg/',data={'username':'mario','password':'i-keep-jumping'})
+#         # получить веб-токен JSON для вновь созданного пользователя
+#         response=self.client.post('/auth/jwt/create/',data={'username':'mario','password':'i-keep-jumping'})
+#         self.token=response.data['access']
+#         self.api_authentication()
 
-    def api_authentication(self):
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer '+self.token)
+#     # def api_authentication(self):
+#     #     self.client.credentials(HTTP_AUTHORIZATION='Bearer '+self.token)
 
-    # # получить список всех профилей пользователей во время аутентификации пользователя запроса
-    # def test_userprofile_list_authenticated(self):
-    #     response=self.client.get(self.profile_list_url)
-    #     self.assertEqual(response.status_code,status.HTTP_200_OK)
+#     # получить список всех профилей пользователей во время аутентификации пользователя запроса
+#     def test_userprofile_list_authenticated(self):
+#         response=self.client.get(self.profile_list_url)
+#         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     # # получить список всех профилей пользователей, пока запрос пользователя не прошел проверку подлинности
     # def test_userprofile_list_unauthenticated(self):

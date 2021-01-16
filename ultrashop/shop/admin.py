@@ -1,18 +1,21 @@
-from shop.models import *
+from shop.models import Shop, Category, Product, Productinfo, Order, OrderItem, Contact, Parameter, ProductParameter
 from django.contrib import admin
 
 
 @admin.register(Shop)
 class ShopAdmin(admin.ModelAdmin):
-    list_display = ['name', 'slug', ]
-    # list_display = [field.name for field in Shop._meta.get_fields()]
+    # list_display = ['name', 'slug', ]
+    list_display = [field.name for field in Shop._meta.get_fields()
+                    if field.name not in
+                    {"productinfo", "orderitem", "categories"}
+                    ]
     list_filter = ['state', ]
     prepopulated_fields = {'slug': ('name',)}
 
 
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
-    list_display = ['name', ]
+    list_display = ['name', 'slug' ]
     prepopulated_fields = {'slug': ('name',)}
 
 
@@ -25,17 +28,18 @@ class ProductAdmin(admin.ModelAdmin):
 
 @admin.register(Productinfo)
 class ProductinfoAdmin(admin.ModelAdmin):
-    list_display = ['name', 'shop', 'product', 'quantity', 'price', 'price_rrc', ]
-
+    list_display = [field.name for field in Productinfo._meta.get_fields()
+                    if field.name not in {"productparameter", "orderitem"}]
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['user', 'dt', 'state', ]
+    list_display = [field.name for field in Order._meta.get_fields()
+                    if field.name not in {"orderitem"}]
 
 
 @admin.register(OrderItem)
 class OrderItemAdmin(admin.ModelAdmin):
-    list_display = ['order', 'product', 'shop', 'quantity', ]
+    list_display = list_display = [field.name for field in OrderItem._meta.get_fields()]
 
 
 @admin.register(Contact)

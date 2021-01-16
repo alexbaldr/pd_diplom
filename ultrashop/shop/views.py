@@ -1,29 +1,31 @@
-from shop.signals import new_order_reciver
-from rest_framework import mixins
-from rest_framework import viewsets, status
+from ultrashop import settings
+import yaml
 from django.db.models.query_utils import Q
-from django_filters.rest_framework import DjangoFilterBackend
 from django.http.response import JsonResponse
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
-from rest_framework.views import APIView
-from rest_framework.generics import ListAPIView, get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import status, viewsets
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import (IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle
+from rest_framework.views import APIView
+
 from shop.models import *
 from shop.serializers import *
-from registration.models import User
-from rest_framework.decorators import action
+from shop.signals import new_order_reciver
+import os.path
 
-# class Get_ID(APIView):
-#     def user_id(self, request):
-#         if request.user.is_authenticated:
-#             return request.user.id
 
 class CategoryView(APIView):
     # Получаем  и создаем категорию
     permission_classes = [IsAuthenticatedOrReadOnly]
+    throttle_classes = [UserRateThrottle]
 
     def post(self, request, *args, **kwargs):
         serializer = CategorySerializers(data=request.data)
+        quaryset = Category.objects.all()
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -31,23 +33,43 @@ class CategoryView(APIView):
             return Response(serializer.errors)
 
     def get(self, request, *args, **kwargs):
-        quaryset = Category.objects.all()
-        serializer = CategorySerializers(quaryset, many=True)
+        quary_category = Category.objects.all()
+        serializer = CategorySerializers(quary_category, many=True)
         return Response(serializer.data)
 
 
 class ShopView(APIView):
     #  Создаем магазин и получаем все магазины
+    permission_classes = [IsAuthenticatedOrReadOnly]
+    throttle_classes = [UserRateThrottle]
+
     def post(self, request, *args, **kwargs):
         if request.user.is_authenticated:
-            serializer = ShopSerializers(data={'name': request.data['name'],
-                                               'url': request.data["url"],
-                                               'shop_manager_id': request.user.id})
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data)
+            # попытка 1
+            check_file = os.path.exists('media/shop.yaml')
+            if check_file:
+                with open(os.path.join(settings.BASE_DIR, "media/shop.yaml"), 'r') as stream:
+                    try:
+                        data = yaml.load(stream, Loader=yaml.Loader)
+                    except yaml.YAMLError:
+                        return Response(EnvironmentError)
+                    for shop in data["shop"]:
+                        s_create = Shop.objects.create(
+                                                        file=shop['file'],
+                                                        name=shop['name'],
+                                                        url=shop["url"],
+                                                        slug=shop['slug'],
+                                                        shop_manager_id=request.user.id)
+                    return Response({'Status': True}, status=201)
             else:
-                return Response(serializer.errors)
+                serializer = ShopSerializers(data={'name': request.data['name'],
+                                                   'url': request.data["url"],
+                                                   'shop_manager_id': request.user.id})
+                if serializer.is_valid():
+                    serializer.save()
+                    return Response(serializer.data)
+                else:
+                    return Response(serializer.errors)
         else:
             return JsonResponse({'Status': False, 'Errors': 'Нужна регистрация пользователя'})
 
@@ -128,6 +150,7 @@ class ProductDetailView(APIView):
         serializer = ProductInfoSerializers(quaryset, many=True)
         return Response(serializer.data)
 
+
     def post(self, request, *args, **kwargs):
         serializer = ProductInfoSerializers(data=request.data)
         if serializer.is_valid():
@@ -139,8 +162,8 @@ class ProductDetailView(APIView):
 
 class OrderView(APIView):
     # просмотр заказа, его создание (карзину условно принимать в сессии)
-
     permission_classes = [IsAuthenticated]
+
     def get(self, request, *args, **kwargs):
         quaryset = Order.objects.filter(user=request.user.id)
         serializer = OrderSerializers(quaryset, many=True)
@@ -182,6 +205,7 @@ class ContactView(viewsets.ModelViewSet):
         serializer = ContactSerializers(user)
         return Response(serializer.data)
 
+
     def destroy(self, request, pk, **kwargs):
         queryset = self.get_queryset()
         contact = queryset.filter(contact_id=pk)
@@ -192,16 +216,17 @@ class ContactView(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
-        headers =self.get_success_headers(serializer.data)
+        headers = self.get_success_headers(serializer.data)
         return Response(serializer.data,
                         status=status.HTTP_201_CREATED,
                         headers=headers)
 
     def update(self, request, pk, **kwargs):
         queryset = self.get_queryset()
-        partial = True # Here I change partial to True
+        partial = True  # Here I change partial to True
         instance = get_object_or_404(queryset, contact_id=pk)
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer = self.get_serializer(instance, data=request.data,
+                                         partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)

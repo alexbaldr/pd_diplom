@@ -1,0 +1,15 @@
+shop:
+  - file: null
+    id: 5
+    name: get it shop
+    shop_manager: admin12
+    shop_manager_id: 11
+    slug: get-it-shop
+    url: ''
+  - file: null
+    id: 6
+    name: Next Gen
+    shop_manager: admin12
+    shop_manager_id: 11
+    slug: next-gen
+    url: https://nextgen.com

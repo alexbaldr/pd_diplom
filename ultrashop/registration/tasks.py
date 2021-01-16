@@ -1,8 +1,7 @@
-from celery import shared_task
 from rest_framework.authtoken.models import Token
 from django.core.mail import send_mail
-from django.conf import settings
 from ultrashop.celery import app
+from ultrashop.settings import DEFAULT_FROM_EMAIL
 
 
 @app.task
@@ -14,8 +13,8 @@ def send_token_task(user_id=None, **kwargs):
         # message:
         message=token.key,
         # from:
-        from_email=settings.DEFAULT_FROM_EMAIL,
+        from_email=DEFAULT_FROM_EMAIL,
         # to:
         recipient_list=[token.user.email],
-        fail_silently=False,
+        fail_silently=True,
     )
